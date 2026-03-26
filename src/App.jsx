@@ -176,11 +176,15 @@ function AuthPage({ onLogin }) {
     if (!isLogin && !form.username) { setError("Username is required"); return; }
     setLoading(true); setError("");
     try {
-      const endpoint = isLogin ? "/api/auth/login" : "/api/auth/register";
-      const res = await fetch(BACKEND_URL + endpoint, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
+  const endpoint = isLogin ? "/api/auth/login" : "/api/auth/register";
+
+fetch(`https://chat-backend-dpgv.onrender.com${endpoint}`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({ email, password, username }),
+})
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Something went wrong");
       localStorage.setItem("token", data.token);
