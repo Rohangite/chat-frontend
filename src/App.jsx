@@ -278,9 +278,7 @@ function ChatApp({ currentUser, onLogout }) {
 }, []);
 
   // Initialize with mock messages
-  useEffect(() => {
-    setMessages(mockMessages);
-  }, []);
+
 
   // Socket connection
   useEffect(() => {
@@ -356,10 +354,28 @@ function ChatApp({ currentUser, onLogout }) {
     };
 
     // Add to local state
-    setMessages(prev => ({
-      ...prev,
-      [selectedUser._id]: [...(prev[selectedUser._id] || []), msg],
-    }));
+  const sendMessage = () => {
+  if (!inputText.trim() || !socket || !selectedUser) return;
+
+  const msg = {
+    _id: Date.now(),
+    sender_id: currentUser._id,
+    receiver_id: selectedUser._id,
+    text: inputText,
+  };
+
+  socket.emit("send_message", msg);
+
+  setMessages(prev => ({
+    ...prev,
+    [selectedUser._id]: [
+      ...(prev[selectedUser._id] || []),
+      msg,
+    ],
+  }));
+
+  setInputText("");
+};
 
     // Emit via socket
     if (socket?.connected) {
