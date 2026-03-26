@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { io } from "socket.io-client";
 
-const BACKEND_URL = "http://localhost:5000";
+const BACKEND_URL = "https://chat-backend-dpgv.onrender.com";
 
 // ─── GLOBAL STYLES ────────────────────────────────────────────────────────────
 const globalStyles = `
@@ -93,13 +93,7 @@ const globalStyles = `
 `;
 
 // ─── MOCK DATA ────────────────────────────────────────────────────────────────
-let mockUsers = [
-  { _id: "u1", username: "Priya Sharma", email: "priya@demo.com", is_online: true, avatar: "PS" },
-  { _id: "u2", username: "Rahul Verma", email: "rahul@demo.com", is_online: false, avatar: "RV" },
-  { _id: "u3", username: "Anita Nair", email: "anita@demo.com", is_online: true, avatar: "AN" },
-  { _id: "u4", username: "Dev Patel", email: "dev@demo.com", is_online: false, avatar: "DP" },
-  { _id: "u5", username: "Sneha Iyer", email: "sneha@demo.com", is_online: true, avatar: "SI" },
-];
+
 
 let mockMessages = {
   "u1": [
@@ -258,7 +252,7 @@ function AuthPage({ onLogin }) {
 
 // ─── MAIN CHAT APP ────────────────────────────────────────────────────────────
 function ChatApp({ currentUser, onLogout }) {
-  const [users, setUsers] = useState(mockUsers);
+  const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [messages, setMessages] = useState({});
   const [inputText, setInputText] = useState("");
@@ -272,6 +266,13 @@ function ChatApp({ currentUser, onLogout }) {
   const messagesEndRef = useRef(null);
   const fileRef = useRef(null);
   const typingTimer = useRef(null);
+
+   useEffect(() => {
+  fetch("https://chat-backend-dpgv.onrender.com/api/users")
+    .then(res => res.json())
+    .then(data => setUsers(data))
+    .catch(err => console.log(err));
+}, []);
 
   // Initialize with mock messages
   useEffect(() => {
