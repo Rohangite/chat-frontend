@@ -178,23 +178,22 @@ function AuthPage({ onLogin }) {
     try {
   const endpoint = isLogin ? "/api/auth/login" : "/api/auth/register";
 
-fetch(`https://chat-backend-dpgv.onrender.com${endpoint}`, {
+const res = await fetch(`https://chat-backend-dpgv.onrender.com${endpoint}`, {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
   },
-  body: JSON.stringify({ email, password, username }),
-})
-      const data = await res.json();
+  body: JSON.stringify({ email: form.email, password: form.password, username: form.username }),
+});
+
+const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Something went wrong");
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
       onLogin(data.user, data.token);
     } catch (err) {
       // Demo mode fallback
-      const demoUser = { _id: "me", username: form.username || form.email.split("@")[0], email: form.email, is_online: true };
-      localStorage.setItem("user", JSON.stringify(demoUser));
-      onLogin(demoUser, "demo-token");
+     
     } finally {
       setLoading(false);
     }
