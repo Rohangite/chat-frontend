@@ -282,49 +282,50 @@ function ChatApp({ currentUser, onLogout }) {
 
   // Socket connection
   useEffect(() => {
-    try {
-      const s = io(BACKEND_URL, {
-        auth: { token: localStorage.getItem("token") },
-        timeout: 3000,
-      });
-      s.on("connect", () => {
-        setSocket(s);
-        s.emit("user_online", currentUser._id);
-      });
-      s.on("receive_message", (msg) => {
-        setMessages(prev => ({
-          ...prev,
-          [msg.sender_id]: [...(prev[msg.sender_id] || []), msg],
-        }));
-        // Play notification sound (simple beep)
-        try {
-          const ctx = new AudioContext();
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.connect(gain); gain.connect(ctx.destination);
-          osc.frequency.value = 880;
-          gain.gain.setValueAtTime(0.1, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
-          osc.start(); osc.stop(ctx.currentTime + 0.1);
-        } catch {}
-      });
-      s.on("user_status", ({ userId, is_online }) => {
-        setUsers(prev => prev.map(u => u._id === userId ? {...u, is_online} : u));
-      });
-      s.on("typing", ({ from }) => {
-        if (selectedUser?._id === from) setTyping(true);
-        clearTimeout(typingTimer.current);
-        typingTimer.current = setTimeout(() => setTyping(false), 2000);
-      });
-      s.on("message_read", ({ messageId, chatUserId }) => {
-        setMessages(prev => ({
-          ...prev,
-          [chatUserId]: (prev[chatUserId] || []).map(m => m._id === messageId ? {...m, status: "read"} : m),
-        }));
-      });
-      return () => s.disconnect();
-    } catch {}
-  }, [currentUser._id]);
+  try {
+    const s = io(BACKEND_URL, {
+      auth: { token: localStorage.getItem("token") },
+      timeout: 3000,
+    });
+
+    s.on("connect", () => {
+      console.log("Socket connected");
+      setSocket(s);
+      s.emit("user_online", currentUser._id);
+    });
+
+    s.on("receive_message", (msg) => {
+      console.log("Received:", msg);
+
+      const chatId =
+        msg.sender_id === currentUser._id
+          ? msg.receiver_id
+          : msg.sender_id;
+
+      setMessages(prev => ({
+        ...prev,
+        [chatId]: [
+          ...(prev[chatId] || []),
+          msg,
+        ],
+      }));
+    });
+
+    // keep your other events BELOW this (if any)
+    s.on("user_status", ({ userId, is_online }) => {
+      setUsers(prev =>
+        prev.map(u =>
+          u._id === userId ? { ...u, is_online } : u
+        )
+      );
+    });
+
+    return () => s.disconnect();
+
+  } catch (err) {
+    console.log(err);
+  }
+}, [currentUser]);
 
   // Auto scroll
   useEffect(() => {
