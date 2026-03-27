@@ -192,9 +192,9 @@ const data = await res.json();
       localStorage.setItem("user", JSON.stringify(data.user));
       onLogin(data.user, data.token);
     } catch (err) {
-      // Demo mode fallback
-     
-    } finally {
+  console.log(err);
+  setError("Login failed");
+} finally {
       setLoading(false);
     }
   };
